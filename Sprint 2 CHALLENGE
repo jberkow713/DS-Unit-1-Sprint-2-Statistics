@@ -1,0 +1,2350 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "name": "Copy of DS14_Unit_1_Sprint_Challenge_2.ipynb",
+      "provenance": [],
+      "collapsed_sections": [],
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/jberkow713/DS-Unit-1-Sprint-2-Statistics/blob/master/Sprint%202%20CHALLENGE\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "NooAiTdnafkz",
+        "colab_type": "text"
+      },
+      "source": [
+        "# Data Science Unit 1 Sprint Challenge 2\n",
+        "\n",
+        "## Exploring Data, Testing Hypotheses\n",
+        "\n",
+        "In this sprint challenge you will look at a dataset of people being approved or rejected for credit.\n",
+        "\n",
+        "https://archive.ics.uci.edu/ml/datasets/Credit+Approval\n",
+        "\n",
+        "Data Set Information: This file concerns credit card applications. All attribute names and values have been changed to meaningless symbols to protect confidentiality of the data. This dataset is interesting because there is a good mix of attributes -- continuous, nominal with small numbers of values, and nominal with larger numbers of values. There are also a few missing values.\n",
+        "\n",
+        "Attribute Information:\n",
+        "- A1: b, a.\n",
+        "- A2: continuous.\n",
+        "- A3: continuous.\n",
+        "- A4: u, y, l, t.\n",
+        "- A5: g, p, gg.\n",
+        "- A6: c, d, cc, i, j, k, m, r, q, w, x, e, aa, ff.\n",
+        "- A7: v, h, bb, j, n, z, dd, ff, o.\n",
+        "- A8: continuous.\n",
+        "- A9: t, f.\n",
+        "- A10: t, f.\n",
+        "- A11: continuous.\n",
+        "- A12: t, f.\n",
+        "- A13: g, p, s.\n",
+        "- A14: continuous.\n",
+        "- A15: continuous.\n",
+        "- A16: +,- (class attribute)\n",
+        "\n",
+        "Yes, most of that doesn't mean anything. A16 is a variable that indicates whether or not a person's request for credit has been approved or denied. This is a good candidate for a y variable since we might want to use the other features to predict this one. The remaining variables have been obfuscated for privacy - a challenge you may have to deal with in your data science career.\n",
+        "\n",
+        "Sprint challenges are evaluated based on satisfactory completion of each part. It is suggested you work through it in order, getting each aspect reasonably working, before trying to deeply explore, iterate, or refine any given step. Once you get to the end, if you want to go back and improve things, go for it!"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "5wch6ksCbJtZ",
+        "colab_type": "text"
+      },
+      "source": [
+        "## Part 1 - Load and validate the data\n",
+        "\n",
+        "- Load the data as a `pandas` data frame.\n",
+        "- Validate that it has the appropriate number of observations (you can check the raw file, and also read the dataset description from UCI).\n",
+        "- UCI says there should be missing data - check, and if necessary change the data so pandas recognizes it as na\n",
+        "- Make sure that the loaded features are of the types described above (continuous values should be treated as float), and correct as necessary\n",
+        "\n",
+        "This is review, but skills that you'll use at the start of any data exploration. Further, you may have to do some investigation to figure out which file to load from - that is part of the puzzle."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "Q79xDLckzibS",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "import pandas as pd\n",
+        "import numpy as np\n",
+        "import matplotlib.pyplot as plt\n",
+        "from scipy import stats\n"
+      ],
+      "execution_count": 0,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "KFbXzFA5e3BN",
+        "colab_type": "code",
+        "outputId": "83f3d7b1-1dd6-4327-ed6d-361ec3498064",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 695
+        }
+      },
+      "source": [
+        "df = pd.read_csv('https://archive.ics.uci.edu/ml/machine-learning-databases/credit-screening/crx.data')\n",
+        "\n",
+        "print(df.shape)\n",
+        "df.head(20)"
+      ],
+      "execution_count": 0,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "(689, 16)\n"
+          ],
+          "name": "stdout"
+        },
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/html": [
+              "<div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>b</th>\n",
+              "      <th>30.83</th>\n",
+              "      <th>0</th>\n",
+              "      <th>u</th>\n",
+              "      <th>g</th>\n",
+              "      <th>w</th>\n",
+              "      <th>v</th>\n",
+              "      <th>1.25</th>\n",
+              "      <th>t</th>\n",
+              "      <th>t.1</th>\n",
+              "      <th>01</th>\n",
+              "      <th>f</th>\n",
+              "      <th>g.1</th>\n",
+              "      <th>00202</th>\n",
+              "      <th>0.1</th>\n",
+              "      <th>+</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>0</th>\n",
+              "      <td>a</td>\n",
+              "      <td>58.67</td>\n",
+              "      <td>4.460</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>q</td>\n",
+              "      <td>h</td>\n",
+              "      <td>3.040</td>\n",
+              "      <td>t</td>\n",
+              "      <td>t</td>\n",
+              "      <td>6</td>\n",
+              "      <td>f</td>\n",
+              "      <td>g</td>\n",
+              "      <td>00043</td>\n",
+              "      <td>560</td>\n",
+              "      <td>+</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>1</th>\n",
+              "      <td>a</td>\n",
+              "      <td>24.50</td>\n",
+              "      <td>0.500</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>q</td>\n",
+              "      <td>h</td>\n",
+              "      <td>1.500</td>\n",
+              "      <td>t</td>\n",
+              "      <td>f</td>\n",
+              "      <td>0</td>\n",
+              "      <td>f</td>\n",
+              "      <td>g</td>\n",
+              "      <td>00280</td>\n",
+              "      <td>824</td>\n",
+              "      <td>+</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>2</th>\n",
+              "      <td>b</td>\n",
+              "      <td>27.83</td>\n",
+              "      <td>1.540</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>w</td>\n",
+              "      <td>v</td>\n",
+              "      <td>3.750</td>\n",
+              "      <td>t</td>\n",
+              "      <td>t</td>\n",
+              "      <td>5</td>\n",
+              "      <td>t</td>\n",
+              "      <td>g</td>\n",
+              "      <td>00100</td>\n",
+              "      <td>3</td>\n",
+              "      <td>+</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>3</th>\n",
+              "      <td>b</td>\n",
+              "      <td>20.17</td>\n",
+              "      <td>5.625</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>w</td>\n",
+              "      <td>v</td>\n",
+              "      <td>1.710</td>\n",
+              "      <td>t</td>\n",
+              "      <td>f</td>\n",
+              "      <td>0</td>\n",
+              "      <td>f</td>\n",
+              "      <td>s</td>\n",
+              "      <td>00120</td>\n",
+              "      <td>0</td>\n",
+              "      <td>+</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>4</th>\n",
+              "      <td>b</td>\n",
+              "      <td>32.08</td>\n",
+              "      <td>4.000</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>m</td>\n",
+              "      <td>v</td>\n",
+              "      <td>2.500</td>\n",
+              "      <td>t</td>\n",
+              "      <td>f</td>\n",
+              "      <td>0</td>\n",
+              "      <td>t</td>\n",
+              "      <td>g</td>\n",
+              "      <td>00360</td>\n",
+              "      <td>0</td>\n",
+              "      <td>+</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>5</th>\n",
+              "      <td>b</td>\n",
+              "      <td>33.17</td>\n",
+              "      <td>1.040</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>r</td>\n",
+              "      <td>h</td>\n",
+              "      <td>6.500</td>\n",
+              "      <td>t</td>\n",
+              "      <td>f</td>\n",
+              "      <td>0</td>\n",
+              "      <td>t</td>\n",
+              "      <td>g</td>\n",
+              "      <td>00164</td>\n",
+              "      <td>31285</td>\n",
+              "      <td>+</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>6</th>\n",
+              "      <td>a</td>\n",
+              "      <td>22.92</td>\n",
+              "      <td>11.585</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>cc</td>\n",
+              "      <td>v</td>\n",
+              "      <td>0.040</td>\n",
+              "      <td>t</td>\n",
+              "      <td>f</td>\n",
+              "      <td>0</td>\n",
+              "      <td>f</td>\n",
+              "      <td>g</td>\n",
+              "      <td>00080</td>\n",
+              "      <td>1349</td>\n",
+              "      <td>+</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>7</th>\n",
+              "      <td>b</td>\n",
+              "      <td>54.42</td>\n",
+              "      <td>0.500</td>\n",
+              "      <td>y</td>\n",
+              "      <td>p</td>\n",
+              "      <td>k</td>\n",
+              "      <td>h</td>\n",
+              "      <td>3.960</td>\n",
+              "      <td>t</td>\n",
+              "      <td>f</td>\n",
+              "      <td>0</td>\n",
+              "      <td>f</td>\n",
+              "      <td>g</td>\n",
+              "      <td>00180</td>\n",
+              "      <td>314</td>\n",
+              "      <td>+</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>8</th>\n",
+              "      <td>b</td>\n",
+              "      <td>42.50</td>\n",
+              "      <td>4.915</td>\n",
+              "      <td>y</td>\n",
+              "      <td>p</td>\n",
+              "      <td>w</td>\n",
+              "      <td>v</td>\n",
+              "      <td>3.165</td>\n",
+              "      <td>t</td>\n",
+              "      <td>f</td>\n",
+              "      <td>0</td>\n",
+              "      <td>t</td>\n",
+              "      <td>g</td>\n",
+              "      <td>00052</td>\n",
+              "      <td>1442</td>\n",
+              "      <td>+</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>9</th>\n",
+              "      <td>b</td>\n",
+              "      <td>22.08</td>\n",
+              "      <td>0.830</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>c</td>\n",
+              "      <td>h</td>\n",
+              "      <td>2.165</td>\n",
+              "      <td>f</td>\n",
+              "      <td>f</td>\n",
+              "      <td>0</td>\n",
+              "      <td>t</td>\n",
+              "      <td>g</td>\n",
+              "      <td>00128</td>\n",
+              "      <td>0</td>\n",
+              "      <td>+</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>10</th>\n",
+              "      <td>b</td>\n",
+              "      <td>29.92</td>\n",
+              "      <td>1.835</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>c</td>\n",
+              "      <td>h</td>\n",
+              "      <td>4.335</td>\n",
+              "      <td>t</td>\n",
+              "      <td>f</td>\n",
+              "      <td>0</td>\n",
+              "      <td>f</td>\n",
+              "      <td>g</td>\n",
+              "      <td>00260</td>\n",
+              "      <td>200</td>\n",
+              "      <td>+</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>11</th>\n",
+              "      <td>a</td>\n",
+              "      <td>38.25</td>\n",
+              "      <td>6.000</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>k</td>\n",
+              "      <td>v</td>\n",
+              "      <td>1.000</td>\n",
+              "      <td>t</td>\n",
+              "      <td>f</td>\n",
+              "      <td>0</td>\n",
+              "      <td>t</td>\n",
+              "      <td>g</td>\n",
+              "      <td>00000</td>\n",
+              "      <td>0</td>\n",
+              "      <td>+</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>12</th>\n",
+              "      <td>b</td>\n",
+              "      <td>48.08</td>\n",
+              "      <td>6.040</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>k</td>\n",
+              "      <td>v</td>\n",
+              "      <td>0.040</td>\n",
+              "      <td>f</td>\n",
+              "      <td>f</td>\n",
+              "      <td>0</td>\n",
+              "      <td>f</td>\n",
+              "      <td>g</td>\n",
+              "      <td>00000</td>\n",
+              "      <td>2690</td>\n",
+              "      <td>+</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>13</th>\n",
+              "      <td>a</td>\n",
+              "      <td>45.83</td>\n",
+              "      <td>10.500</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>q</td>\n",
+              "      <td>v</td>\n",
+              "      <td>5.000</td>\n",
+              "      <td>t</td>\n",
+              "      <td>t</td>\n",
+              "      <td>7</td>\n",
+              "      <td>t</td>\n",
+              "      <td>g</td>\n",
+              "      <td>00000</td>\n",
+              "      <td>0</td>\n",
+              "      <td>+</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>14</th>\n",
+              "      <td>b</td>\n",
+              "      <td>36.67</td>\n",
+              "      <td>4.415</td>\n",
+              "      <td>y</td>\n",
+              "      <td>p</td>\n",
+              "      <td>k</td>\n",
+              "      <td>v</td>\n",
+              "      <td>0.250</td>\n",
+              "      <td>t</td>\n",
+              "      <td>t</td>\n",
+              "      <td>10</td>\n",
+              "      <td>t</td>\n",
+              "      <td>g</td>\n",
+              "      <td>00320</td>\n",
+              "      <td>0</td>\n",
+              "      <td>+</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>15</th>\n",
+              "      <td>b</td>\n",
+              "      <td>28.25</td>\n",
+              "      <td>0.875</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>m</td>\n",
+              "      <td>v</td>\n",
+              "      <td>0.960</td>\n",
+              "      <td>t</td>\n",
+              "      <td>t</td>\n",
+              "      <td>3</td>\n",
+              "      <td>t</td>\n",
+              "      <td>g</td>\n",
+              "      <td>00396</td>\n",
+              "      <td>0</td>\n",
+              "      <td>+</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>16</th>\n",
+              "      <td>a</td>\n",
+              "      <td>23.25</td>\n",
+              "      <td>5.875</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>q</td>\n",
+              "      <td>v</td>\n",
+              "      <td>3.170</td>\n",
+              "      <td>t</td>\n",
+              "      <td>t</td>\n",
+              "      <td>10</td>\n",
+              "      <td>f</td>\n",
+              "      <td>g</td>\n",
+              "      <td>00120</td>\n",
+              "      <td>245</td>\n",
+              "      <td>+</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>17</th>\n",
+              "      <td>b</td>\n",
+              "      <td>21.83</td>\n",
+              "      <td>0.250</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>d</td>\n",
+              "      <td>h</td>\n",
+              "      <td>0.665</td>\n",
+              "      <td>t</td>\n",
+              "      <td>f</td>\n",
+              "      <td>0</td>\n",
+              "      <td>t</td>\n",
+              "      <td>g</td>\n",
+              "      <td>00000</td>\n",
+              "      <td>0</td>\n",
+              "      <td>+</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>18</th>\n",
+              "      <td>a</td>\n",
+              "      <td>19.17</td>\n",
+              "      <td>8.585</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>cc</td>\n",
+              "      <td>h</td>\n",
+              "      <td>0.750</td>\n",
+              "      <td>t</td>\n",
+              "      <td>t</td>\n",
+              "      <td>7</td>\n",
+              "      <td>f</td>\n",
+              "      <td>g</td>\n",
+              "      <td>00096</td>\n",
+              "      <td>0</td>\n",
+              "      <td>+</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>19</th>\n",
+              "      <td>b</td>\n",
+              "      <td>25.00</td>\n",
+              "      <td>11.250</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>c</td>\n",
+              "      <td>v</td>\n",
+              "      <td>2.500</td>\n",
+              "      <td>t</td>\n",
+              "      <td>t</td>\n",
+              "      <td>17</td>\n",
+              "      <td>f</td>\n",
+              "      <td>g</td>\n",
+              "      <td>00200</td>\n",
+              "      <td>1208</td>\n",
+              "      <td>+</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>"
+            ],
+            "text/plain": [
+              "    b  30.83       0  u  g   w  v   1.25  t t.1  01  f g.1  00202    0.1  +\n",
+              "0   a  58.67   4.460  u  g   q  h  3.040  t   t   6  f   g  00043    560  +\n",
+              "1   a  24.50   0.500  u  g   q  h  1.500  t   f   0  f   g  00280    824  +\n",
+              "2   b  27.83   1.540  u  g   w  v  3.750  t   t   5  t   g  00100      3  +\n",
+              "3   b  20.17   5.625  u  g   w  v  1.710  t   f   0  f   s  00120      0  +\n",
+              "4   b  32.08   4.000  u  g   m  v  2.500  t   f   0  t   g  00360      0  +\n",
+              "5   b  33.17   1.040  u  g   r  h  6.500  t   f   0  t   g  00164  31285  +\n",
+              "6   a  22.92  11.585  u  g  cc  v  0.040  t   f   0  f   g  00080   1349  +\n",
+              "7   b  54.42   0.500  y  p   k  h  3.960  t   f   0  f   g  00180    314  +\n",
+              "8   b  42.50   4.915  y  p   w  v  3.165  t   f   0  t   g  00052   1442  +\n",
+              "9   b  22.08   0.830  u  g   c  h  2.165  f   f   0  t   g  00128      0  +\n",
+              "10  b  29.92   1.835  u  g   c  h  4.335  t   f   0  f   g  00260    200  +\n",
+              "11  a  38.25   6.000  u  g   k  v  1.000  t   f   0  t   g  00000      0  +\n",
+              "12  b  48.08   6.040  u  g   k  v  0.040  f   f   0  f   g  00000   2690  +\n",
+              "13  a  45.83  10.500  u  g   q  v  5.000  t   t   7  t   g  00000      0  +\n",
+              "14  b  36.67   4.415  y  p   k  v  0.250  t   t  10  t   g  00320      0  +\n",
+              "15  b  28.25   0.875  u  g   m  v  0.960  t   t   3  t   g  00396      0  +\n",
+              "16  a  23.25   5.875  u  g   q  v  3.170  t   t  10  f   g  00120    245  +\n",
+              "17  b  21.83   0.250  u  g   d  h  0.665  t   f   0  t   g  00000      0  +\n",
+              "18  a  19.17   8.585  u  g  cc  h  0.750  t   t   7  f   g  00096      0  +\n",
+              "19  b  25.00  11.250  u  g   c  v  2.500  t   t  17  f   g  00200   1208  +"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 167
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "GHbfFwose3FS",
+        "colab_type": "code",
+        "outputId": "638269cf-130d-45f4-92d5-3b5599bf6a41",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 424
+        }
+      },
+      "source": [
+        "#check for missing data...apparently there is no missing data\n",
+        "\n",
+        "df = df.replace({'?': np.NaN})\n",
+        "df.head()\n",
+        "df.dropna()\n"
+      ],
+      "execution_count": 0,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/html": [
+              "<div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>b</th>\n",
+              "      <th>30.83</th>\n",
+              "      <th>0</th>\n",
+              "      <th>u</th>\n",
+              "      <th>g</th>\n",
+              "      <th>w</th>\n",
+              "      <th>v</th>\n",
+              "      <th>1.25</th>\n",
+              "      <th>t</th>\n",
+              "      <th>t.1</th>\n",
+              "      <th>01</th>\n",
+              "      <th>f</th>\n",
+              "      <th>g.1</th>\n",
+              "      <th>00202</th>\n",
+              "      <th>0.1</th>\n",
+              "      <th>+</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>0</th>\n",
+              "      <td>a</td>\n",
+              "      <td>58.67</td>\n",
+              "      <td>4.460</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>q</td>\n",
+              "      <td>h</td>\n",
+              "      <td>3.04</td>\n",
+              "      <td>t</td>\n",
+              "      <td>t</td>\n",
+              "      <td>6</td>\n",
+              "      <td>f</td>\n",
+              "      <td>g</td>\n",
+              "      <td>00043</td>\n",
+              "      <td>560</td>\n",
+              "      <td>+</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>1</th>\n",
+              "      <td>a</td>\n",
+              "      <td>24.50</td>\n",
+              "      <td>0.500</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>q</td>\n",
+              "      <td>h</td>\n",
+              "      <td>1.50</td>\n",
+              "      <td>t</td>\n",
+              "      <td>f</td>\n",
+              "      <td>0</td>\n",
+              "      <td>f</td>\n",
+              "      <td>g</td>\n",
+              "      <td>00280</td>\n",
+              "      <td>824</td>\n",
+              "      <td>+</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>2</th>\n",
+              "      <td>b</td>\n",
+              "      <td>27.83</td>\n",
+              "      <td>1.540</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>w</td>\n",
+              "      <td>v</td>\n",
+              "      <td>3.75</td>\n",
+              "      <td>t</td>\n",
+              "      <td>t</td>\n",
+              "      <td>5</td>\n",
+              "      <td>t</td>\n",
+              "      <td>g</td>\n",
+              "      <td>00100</td>\n",
+              "      <td>3</td>\n",
+              "      <td>+</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>3</th>\n",
+              "      <td>b</td>\n",
+              "      <td>20.17</td>\n",
+              "      <td>5.625</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>w</td>\n",
+              "      <td>v</td>\n",
+              "      <td>1.71</td>\n",
+              "      <td>t</td>\n",
+              "      <td>f</td>\n",
+              "      <td>0</td>\n",
+              "      <td>f</td>\n",
+              "      <td>s</td>\n",
+              "      <td>00120</td>\n",
+              "      <td>0</td>\n",
+              "      <td>+</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>4</th>\n",
+              "      <td>b</td>\n",
+              "      <td>32.08</td>\n",
+              "      <td>4.000</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>m</td>\n",
+              "      <td>v</td>\n",
+              "      <td>2.50</td>\n",
+              "      <td>t</td>\n",
+              "      <td>f</td>\n",
+              "      <td>0</td>\n",
+              "      <td>t</td>\n",
+              "      <td>g</td>\n",
+              "      <td>00360</td>\n",
+              "      <td>0</td>\n",
+              "      <td>+</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>...</th>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>684</th>\n",
+              "      <td>b</td>\n",
+              "      <td>21.08</td>\n",
+              "      <td>10.085</td>\n",
+              "      <td>y</td>\n",
+              "      <td>p</td>\n",
+              "      <td>e</td>\n",
+              "      <td>h</td>\n",
+              "      <td>1.25</td>\n",
+              "      <td>f</td>\n",
+              "      <td>f</td>\n",
+              "      <td>0</td>\n",
+              "      <td>f</td>\n",
+              "      <td>g</td>\n",
+              "      <td>00260</td>\n",
+              "      <td>0</td>\n",
+              "      <td>-</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>685</th>\n",
+              "      <td>a</td>\n",
+              "      <td>22.67</td>\n",
+              "      <td>0.750</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>c</td>\n",
+              "      <td>v</td>\n",
+              "      <td>2.00</td>\n",
+              "      <td>f</td>\n",
+              "      <td>t</td>\n",
+              "      <td>2</td>\n",
+              "      <td>t</td>\n",
+              "      <td>g</td>\n",
+              "      <td>00200</td>\n",
+              "      <td>394</td>\n",
+              "      <td>-</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>686</th>\n",
+              "      <td>a</td>\n",
+              "      <td>25.25</td>\n",
+              "      <td>13.500</td>\n",
+              "      <td>y</td>\n",
+              "      <td>p</td>\n",
+              "      <td>ff</td>\n",
+              "      <td>ff</td>\n",
+              "      <td>2.00</td>\n",
+              "      <td>f</td>\n",
+              "      <td>t</td>\n",
+              "      <td>1</td>\n",
+              "      <td>t</td>\n",
+              "      <td>g</td>\n",
+              "      <td>00200</td>\n",
+              "      <td>1</td>\n",
+              "      <td>-</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>687</th>\n",
+              "      <td>b</td>\n",
+              "      <td>17.92</td>\n",
+              "      <td>0.205</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>aa</td>\n",
+              "      <td>v</td>\n",
+              "      <td>0.04</td>\n",
+              "      <td>f</td>\n",
+              "      <td>f</td>\n",
+              "      <td>0</td>\n",
+              "      <td>f</td>\n",
+              "      <td>g</td>\n",
+              "      <td>00280</td>\n",
+              "      <td>750</td>\n",
+              "      <td>-</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>688</th>\n",
+              "      <td>b</td>\n",
+              "      <td>35.00</td>\n",
+              "      <td>3.375</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>c</td>\n",
+              "      <td>h</td>\n",
+              "      <td>8.29</td>\n",
+              "      <td>f</td>\n",
+              "      <td>f</td>\n",
+              "      <td>0</td>\n",
+              "      <td>t</td>\n",
+              "      <td>g</td>\n",
+              "      <td>00000</td>\n",
+              "      <td>0</td>\n",
+              "      <td>-</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "<p>652 rows × 16 columns</p>\n",
+              "</div>"
+            ],
+            "text/plain": [
+              "     b  30.83       0  u  g   w   v  1.25  t t.1  01  f g.1  00202  0.1  +\n",
+              "0    a  58.67   4.460  u  g   q   h  3.04  t   t   6  f   g  00043  560  +\n",
+              "1    a  24.50   0.500  u  g   q   h  1.50  t   f   0  f   g  00280  824  +\n",
+              "2    b  27.83   1.540  u  g   w   v  3.75  t   t   5  t   g  00100    3  +\n",
+              "3    b  20.17   5.625  u  g   w   v  1.71  t   f   0  f   s  00120    0  +\n",
+              "4    b  32.08   4.000  u  g   m   v  2.50  t   f   0  t   g  00360    0  +\n",
+              "..  ..    ...     ... .. ..  ..  ..   ... ..  ..  .. ..  ..    ...  ... ..\n",
+              "684  b  21.08  10.085  y  p   e   h  1.25  f   f   0  f   g  00260    0  -\n",
+              "685  a  22.67   0.750  u  g   c   v  2.00  f   t   2  t   g  00200  394  -\n",
+              "686  a  25.25  13.500  y  p  ff  ff  2.00  f   t   1  t   g  00200    1  -\n",
+              "687  b  17.92   0.205  u  g  aa   v  0.04  f   f   0  f   g  00280  750  -\n",
+              "688  b  35.00   3.375  u  g   c   h  8.29  f   f   0  t   g  00000    0  -\n",
+              "\n",
+              "[652 rows x 16 columns]"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 168
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "z8G0BUGfe3I5",
+        "colab_type": "code",
+        "outputId": "ad59c735-981d-425e-b085-e6c4aa94d965",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 182
+        }
+      },
+      "source": [
+        "#Change 00202 column to float type\n",
+        "df['00202'].describe()\n",
+        "\n",
+        "df[\"00202\"] = pd.to_numeric(df[\"00202\"])\n",
+        "df['00202'].describe()"
+      ],
+      "execution_count": 0,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "count     676.000000\n",
+              "mean      183.988166\n",
+              "std       173.934087\n",
+              "min         0.000000\n",
+              "25%        74.500000\n",
+              "50%       160.000000\n",
+              "75%       277.000000\n",
+              "max      2000.000000\n",
+              "Name: 00202, dtype: float64"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 169
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "jDMzPaVHe3LS",
+        "colab_type": "code",
+        "outputId": "c654c7e1-0675-4ef5-f4b9-b043b30f3967",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 182
+        }
+      },
+      "source": [
+        "df['0.1'].describe()"
+      ],
+      "execution_count": 0,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "count       689.000000\n",
+              "mean       1018.862119\n",
+              "std        5213.743149\n",
+              "min           0.000000\n",
+              "25%           0.000000\n",
+              "50%           5.000000\n",
+              "75%         396.000000\n",
+              "max      100000.000000\n",
+              "Name: 0.1, dtype: float64"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 170
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "DbRIMUm0e3Nv",
+        "colab_type": "code",
+        "outputId": "c3c190b6-d7cf-4081-c5dd-f22c705262b0",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 127
+        }
+      },
+      "source": [
+        "df['+'].value_counts()\n",
+        "df['+'].head()\n"
+      ],
+      "execution_count": 0,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "0    +\n",
+              "1    +\n",
+              "2    +\n",
+              "3    +\n",
+              "4    +\n",
+              "Name: +, dtype: object"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 171
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "auD5bJdFvlNH",
+        "colab_type": "code",
+        "outputId": "c7953fd4-83b1-4ff5-b7e2-6e8f9e98dbf1",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 237
+        }
+      },
+      "source": [
+        "df['30.83'].head()\n",
+        "df[\"30.83\"] = pd.to_numeric(df[\"30.83\"])\n",
+        "df['30.83'].head()\n",
+        "df['30.83'].dropna()"
+      ],
+      "execution_count": 0,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "0      58.67\n",
+              "1      24.50\n",
+              "2      27.83\n",
+              "3      20.17\n",
+              "4      32.08\n",
+              "       ...  \n",
+              "684    21.08\n",
+              "685    22.67\n",
+              "686    25.25\n",
+              "687    17.92\n",
+              "688    35.00\n",
+              "Name: 30.83, Length: 677, dtype: float64"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 172
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "wjauU29Ce3P-",
+        "colab_type": "code",
+        "outputId": "1f01cd6b-8b6c-44e6-be2b-c6a0418f6e1b",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 424
+        }
+      },
+      "source": [
+        "# drop NAN values from dataframe\n",
+        "df.dropna(axis=0, how='any')\n",
+        "df.head(150)"
+      ],
+      "execution_count": 0,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/html": [
+              "<div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>b</th>\n",
+              "      <th>30.83</th>\n",
+              "      <th>0</th>\n",
+              "      <th>u</th>\n",
+              "      <th>g</th>\n",
+              "      <th>w</th>\n",
+              "      <th>v</th>\n",
+              "      <th>1.25</th>\n",
+              "      <th>t</th>\n",
+              "      <th>t.1</th>\n",
+              "      <th>01</th>\n",
+              "      <th>f</th>\n",
+              "      <th>g.1</th>\n",
+              "      <th>00202</th>\n",
+              "      <th>0.1</th>\n",
+              "      <th>+</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>0</th>\n",
+              "      <td>a</td>\n",
+              "      <td>58.67</td>\n",
+              "      <td>4.460</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>q</td>\n",
+              "      <td>h</td>\n",
+              "      <td>3.040</td>\n",
+              "      <td>t</td>\n",
+              "      <td>t</td>\n",
+              "      <td>6</td>\n",
+              "      <td>f</td>\n",
+              "      <td>g</td>\n",
+              "      <td>43.0</td>\n",
+              "      <td>560</td>\n",
+              "      <td>+</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>1</th>\n",
+              "      <td>a</td>\n",
+              "      <td>24.50</td>\n",
+              "      <td>0.500</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>q</td>\n",
+              "      <td>h</td>\n",
+              "      <td>1.500</td>\n",
+              "      <td>t</td>\n",
+              "      <td>f</td>\n",
+              "      <td>0</td>\n",
+              "      <td>f</td>\n",
+              "      <td>g</td>\n",
+              "      <td>280.0</td>\n",
+              "      <td>824</td>\n",
+              "      <td>+</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>2</th>\n",
+              "      <td>b</td>\n",
+              "      <td>27.83</td>\n",
+              "      <td>1.540</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>w</td>\n",
+              "      <td>v</td>\n",
+              "      <td>3.750</td>\n",
+              "      <td>t</td>\n",
+              "      <td>t</td>\n",
+              "      <td>5</td>\n",
+              "      <td>t</td>\n",
+              "      <td>g</td>\n",
+              "      <td>100.0</td>\n",
+              "      <td>3</td>\n",
+              "      <td>+</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>3</th>\n",
+              "      <td>b</td>\n",
+              "      <td>20.17</td>\n",
+              "      <td>5.625</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>w</td>\n",
+              "      <td>v</td>\n",
+              "      <td>1.710</td>\n",
+              "      <td>t</td>\n",
+              "      <td>f</td>\n",
+              "      <td>0</td>\n",
+              "      <td>f</td>\n",
+              "      <td>s</td>\n",
+              "      <td>120.0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>+</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>4</th>\n",
+              "      <td>b</td>\n",
+              "      <td>32.08</td>\n",
+              "      <td>4.000</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>m</td>\n",
+              "      <td>v</td>\n",
+              "      <td>2.500</td>\n",
+              "      <td>t</td>\n",
+              "      <td>f</td>\n",
+              "      <td>0</td>\n",
+              "      <td>t</td>\n",
+              "      <td>g</td>\n",
+              "      <td>360.0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>+</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>...</th>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>145</th>\n",
+              "      <td>b</td>\n",
+              "      <td>23.25</td>\n",
+              "      <td>1.500</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>q</td>\n",
+              "      <td>v</td>\n",
+              "      <td>2.375</td>\n",
+              "      <td>t</td>\n",
+              "      <td>t</td>\n",
+              "      <td>3</td>\n",
+              "      <td>t</td>\n",
+              "      <td>g</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>582</td>\n",
+              "      <td>+</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>146</th>\n",
+              "      <td>a</td>\n",
+              "      <td>40.33</td>\n",
+              "      <td>7.540</td>\n",
+              "      <td>y</td>\n",
+              "      <td>p</td>\n",
+              "      <td>q</td>\n",
+              "      <td>h</td>\n",
+              "      <td>8.000</td>\n",
+              "      <td>t</td>\n",
+              "      <td>t</td>\n",
+              "      <td>14</td>\n",
+              "      <td>f</td>\n",
+              "      <td>g</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>2300</td>\n",
+              "      <td>+</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>147</th>\n",
+              "      <td>a</td>\n",
+              "      <td>30.50</td>\n",
+              "      <td>6.500</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>c</td>\n",
+              "      <td>bb</td>\n",
+              "      <td>4.000</td>\n",
+              "      <td>t</td>\n",
+              "      <td>t</td>\n",
+              "      <td>7</td>\n",
+              "      <td>t</td>\n",
+              "      <td>g</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>3065</td>\n",
+              "      <td>+</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>148</th>\n",
+              "      <td>a</td>\n",
+              "      <td>52.83</td>\n",
+              "      <td>15.000</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>c</td>\n",
+              "      <td>v</td>\n",
+              "      <td>5.500</td>\n",
+              "      <td>t</td>\n",
+              "      <td>t</td>\n",
+              "      <td>14</td>\n",
+              "      <td>f</td>\n",
+              "      <td>g</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>2200</td>\n",
+              "      <td>+</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>149</th>\n",
+              "      <td>a</td>\n",
+              "      <td>46.67</td>\n",
+              "      <td>0.460</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>cc</td>\n",
+              "      <td>h</td>\n",
+              "      <td>0.415</td>\n",
+              "      <td>t</td>\n",
+              "      <td>t</td>\n",
+              "      <td>11</td>\n",
+              "      <td>t</td>\n",
+              "      <td>g</td>\n",
+              "      <td>440.0</td>\n",
+              "      <td>6</td>\n",
+              "      <td>+</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "<p>150 rows × 16 columns</p>\n",
+              "</div>"
+            ],
+            "text/plain": [
+              "     b  30.83       0  u  g   w   v   1.25  t t.1  01  f g.1  00202   0.1  +\n",
+              "0    a  58.67   4.460  u  g   q   h  3.040  t   t   6  f   g   43.0   560  +\n",
+              "1    a  24.50   0.500  u  g   q   h  1.500  t   f   0  f   g  280.0   824  +\n",
+              "2    b  27.83   1.540  u  g   w   v  3.750  t   t   5  t   g  100.0     3  +\n",
+              "3    b  20.17   5.625  u  g   w   v  1.710  t   f   0  f   s  120.0     0  +\n",
+              "4    b  32.08   4.000  u  g   m   v  2.500  t   f   0  t   g  360.0     0  +\n",
+              "..  ..    ...     ... .. ..  ..  ..    ... ..  ..  .. ..  ..    ...   ... ..\n",
+              "145  b  23.25   1.500  u  g   q   v  2.375  t   t   3  t   g    0.0   582  +\n",
+              "146  a  40.33   7.540  y  p   q   h  8.000  t   t  14  f   g    0.0  2300  +\n",
+              "147  a  30.50   6.500  u  g   c  bb  4.000  t   t   7  t   g    0.0  3065  +\n",
+              "148  a  52.83  15.000  u  g   c   v  5.500  t   t  14  f   g    0.0  2200  +\n",
+              "149  a  46.67   0.460  u  g  cc   h  0.415  t   t  11  t   g  440.0     6  +\n",
+              "\n",
+              "[150 rows x 16 columns]"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 173
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "G7rLytbrO38L",
+        "colab_type": "text"
+      },
+      "source": [
+        "## Part 2 - Exploring data, Testing hypotheses\n",
+        "\n",
+        "The only thing we really know about this data is that A16 is the class label. Besides that, we have 6 continuous (float) features and 9 categorical features.\n",
+        "\n",
+        "Explore the data: you can use whatever approach (tables, utility functions, visualizations) to get an impression of the distributions and relationships of the variables. In general, your goal is to understand how the features are different when grouped by the two class labels (`+` and `-`).\n",
+        "\n",
+        "For the 6 continuous features, how are they different when split between the two class labels? Choose two features to run t-tests (again split by class label) - specifically, select one feature that is *extremely* different between the classes, and another feature that is notably less different (though perhaps still \"statistically significantly\" different). You may have to explore more than two features to do this.\n",
+        "\n",
+        "For the categorical features, explore by creating \"cross tabs\" (aka [contingency tables](https://en.wikipedia.org/wiki/Contingency_table)) between them and the class label, and apply the Chi-squared test to them. [pandas.crosstab](http://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.crosstab.html) can create contingency tables, and [scipy.stats.chi2_contingency](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.chi2_contingency.html) can calculate the Chi-squared statistic for them.\n",
+        "\n",
+        "There are 9 categorical features - as with the t-test, try to find one where the Chi-squared test returns an extreme result (rejecting the null that the data are independent), and one where it is less extreme.\n",
+        "\n",
+        "**NOTE** - \"less extreme\" just means smaller test statistic/larger p-value. Even the least extreme differences may be strongly statistically significant.\n",
+        "\n",
+        "Your *main* goal is the hypothesis tests, so don't spend too much time on the exploration/visualization piece. That is just a means to an end - use simple visualizations, such as boxplots or a scatter matrix (both built in to pandas), to get a feel for the overall distribution of the variables.\n",
+        "\n",
+        "This is challenging, so manage your time and aim for a baseline of at least running two t-tests and two Chi-squared tests before polishing. And don't forget to answer the questions in part 3, even if your results in this part aren't what you want them to be."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "-vgS5IDgw-L8",
+        "colab_type": "code",
+        "outputId": "51d9a7e3-283e-47f0-e55c-fc29748391c3",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 127
+        }
+      },
+      "source": [
+        "#convert + column + and - to 0/1 in order to run ttest\n",
+        "df['+'].describe()\n",
+        "df['+'].head()\n",
+        "\n",
+        "df['+'] = df['+'].replace('-', 0)\n",
+        "df['+'] = df['+'].replace('+', 1)\n",
+        "df['+'].head()\n",
+        "\n"
+      ],
+      "execution_count": 0,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "0    1\n",
+              "1    1\n",
+              "2    1\n",
+              "3    1\n",
+              "4    1\n",
+              "Name: +, dtype: int64"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 174
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "MFvONtC_w-Wf",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        ""
+      ],
+      "execution_count": 0,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "_nqcgc0yzm68",
+        "colab_type": "code",
+        "outputId": "a7d8c78c-4fc4-4290-a2f2-5cd23c81583b",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 206
+        }
+      },
+      "source": [
+        "#separating + and - into two new variables\n",
+        "plus = df[df['+'] == 1]\n",
+        "minus = df[df['+'] == 0]\n",
+        "\n",
+        "plus.head()"
+      ],
+      "execution_count": 0,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/html": [
+              "<div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>b</th>\n",
+              "      <th>30.83</th>\n",
+              "      <th>0</th>\n",
+              "      <th>u</th>\n",
+              "      <th>g</th>\n",
+              "      <th>w</th>\n",
+              "      <th>v</th>\n",
+              "      <th>1.25</th>\n",
+              "      <th>t</th>\n",
+              "      <th>t.1</th>\n",
+              "      <th>01</th>\n",
+              "      <th>f</th>\n",
+              "      <th>g.1</th>\n",
+              "      <th>00202</th>\n",
+              "      <th>0.1</th>\n",
+              "      <th>+</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>0</th>\n",
+              "      <td>a</td>\n",
+              "      <td>58.67</td>\n",
+              "      <td>4.460</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>q</td>\n",
+              "      <td>h</td>\n",
+              "      <td>3.04</td>\n",
+              "      <td>t</td>\n",
+              "      <td>t</td>\n",
+              "      <td>6</td>\n",
+              "      <td>f</td>\n",
+              "      <td>g</td>\n",
+              "      <td>43.0</td>\n",
+              "      <td>560</td>\n",
+              "      <td>1</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>1</th>\n",
+              "      <td>a</td>\n",
+              "      <td>24.50</td>\n",
+              "      <td>0.500</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>q</td>\n",
+              "      <td>h</td>\n",
+              "      <td>1.50</td>\n",
+              "      <td>t</td>\n",
+              "      <td>f</td>\n",
+              "      <td>0</td>\n",
+              "      <td>f</td>\n",
+              "      <td>g</td>\n",
+              "      <td>280.0</td>\n",
+              "      <td>824</td>\n",
+              "      <td>1</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>2</th>\n",
+              "      <td>b</td>\n",
+              "      <td>27.83</td>\n",
+              "      <td>1.540</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>w</td>\n",
+              "      <td>v</td>\n",
+              "      <td>3.75</td>\n",
+              "      <td>t</td>\n",
+              "      <td>t</td>\n",
+              "      <td>5</td>\n",
+              "      <td>t</td>\n",
+              "      <td>g</td>\n",
+              "      <td>100.0</td>\n",
+              "      <td>3</td>\n",
+              "      <td>1</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>3</th>\n",
+              "      <td>b</td>\n",
+              "      <td>20.17</td>\n",
+              "      <td>5.625</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>w</td>\n",
+              "      <td>v</td>\n",
+              "      <td>1.71</td>\n",
+              "      <td>t</td>\n",
+              "      <td>f</td>\n",
+              "      <td>0</td>\n",
+              "      <td>f</td>\n",
+              "      <td>s</td>\n",
+              "      <td>120.0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>4</th>\n",
+              "      <td>b</td>\n",
+              "      <td>32.08</td>\n",
+              "      <td>4.000</td>\n",
+              "      <td>u</td>\n",
+              "      <td>g</td>\n",
+              "      <td>m</td>\n",
+              "      <td>v</td>\n",
+              "      <td>2.50</td>\n",
+              "      <td>t</td>\n",
+              "      <td>f</td>\n",
+              "      <td>0</td>\n",
+              "      <td>t</td>\n",
+              "      <td>g</td>\n",
+              "      <td>360.0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>"
+            ],
+            "text/plain": [
+              "   b  30.83      0  u  g  w  v  1.25  t t.1  01  f g.1  00202  0.1  +\n",
+              "0  a  58.67  4.460  u  g  q  h  3.04  t   t   6  f   g   43.0  560  1\n",
+              "1  a  24.50  0.500  u  g  q  h  1.50  t   f   0  f   g  280.0  824  1\n",
+              "2  b  27.83  1.540  u  g  w  v  3.75  t   t   5  t   g  100.0    3  1\n",
+              "3  b  20.17  5.625  u  g  w  v  1.71  t   f   0  f   s  120.0    0  1\n",
+              "4  b  32.08  4.000  u  g  m  v  2.50  t   f   0  t   g  360.0    0  1"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 175
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "Ikcfd8pYm8U2",
+        "colab_type": "code",
+        "outputId": "444a343c-fe7d-4fc2-94a2-96d79d5df941",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 35
+        }
+      },
+      "source": [
+        "stats.ttest_ind(minus['0'], plus['0'])"
+      ],
+      "execution_count": 0,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "Ttest_indResult(statistic=-5.5785223709472715, pvalue=3.490724496507552e-08)"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 187
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "8JdsfdF956Sf",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "#Reject null hypothesis that average '0' is the same for - and + within the + column"
+      ],
+      "execution_count": 0,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "a3_J07iDAySz",
+        "colab_type": "code",
+        "outputId": "deb6eb66-64f5-49f4-997a-8d9cf32f16db",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 265
+        }
+      },
+      "source": [
+        "plus['0'].plot.density()\n",
+        "\n",
+        "plt.show()"
+      ],
+      "execution_count": 0,
+      "outputs": [
+        {
+          "output_type": "display_data",
+          "data": {
+            "image/png": "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\n",
+            "text/plain": [
+              "<Figure size 432x288 with 1 Axes>"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          }
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "kdUslBNP3-dL",
+        "colab_type": "code",
+        "outputId": "b1a4771f-2d21-4a26-d22f-a9c06ac7e188",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 35
+        }
+      },
+      "source": [
+        "stats.ttest_ind(minus['1.25'], plus['1.25'])"
+      ],
+      "execution_count": 0,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "Ttest_indResult(statistic=-8.953578558992847, pvalue=3.188202861884123e-18)"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 188
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "W_dmVl90BGi5",
+        "colab_type": "code",
+        "outputId": "7cc93635-cf04-4e9c-d635-d0bca466a032",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 265
+        }
+      },
+      "source": [
+        "plus['1.25'].plot.density()\n",
+        "\n",
+        "plt.show()"
+      ],
+      "execution_count": 0,
+      "outputs": [
+        {
+          "output_type": "display_data",
+          "data": {
+            "image/png": "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\n",
+            "text/plain": [
+              "<Figure size 432x288 with 1 Axes>"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          }
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "wahJiWnC565O",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "#Reject null hypothesis that average '1.25' is the same for - and + within the + column"
+      ],
+      "execution_count": 0,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "OXX2T-uF4FJA",
+        "colab_type": "code",
+        "outputId": "2d07a238-11f9-45f4-b6c1-842c447f5c43",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 35
+        }
+      },
+      "source": [
+        "stats.ttest_ind(minus['0.1'], plus['0.1'])"
+      ],
+      "execution_count": 0,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "Ttest_indResult(statistic=-4.69003486307862, pvalue=3.296216085672561e-06)"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 189
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "_6E6kdYXBNWK",
+        "colab_type": "code",
+        "outputId": "5ceef68c-7b96-44a0-ce29-0903ffd5fe27",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 265
+        }
+      },
+      "source": [
+        "plus['0.1'].plot.density()\n",
+        "\n",
+        "plt.show()"
+      ],
+      "execution_count": 0,
+      "outputs": [
+        {
+          "output_type": "display_data",
+          "data": {
+            "image/png": "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\n",
+            "text/plain": [
+              "<Figure size 432x288 with 1 Axes>"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          }
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "Q91wPC-c57fo",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "#Reject null hypothesis that average '0.1' is the same for - and + within the + column"
+      ],
+      "execution_count": 0,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "UagTFPYM4R-u",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "#Chi2 test"
+      ],
+      "execution_count": 0,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "R6uf3mtM4SGc",
+        "colab_type": "code",
+        "outputId": "9b2e5545-9374-4687-df26-8b2719fd161f",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 90
+        }
+      },
+      "source": [
+        "df['g'].value_counts()"
+      ],
+      "execution_count": 0,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "g     518\n",
+              "p     163\n",
+              "gg      2\n",
+              "Name: g, dtype: int64"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 135
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "A6jCn48f4SI0",
+        "colab_type": "code",
+        "outputId": "2bff6e4d-352d-4276-e749-3f4424e76b26",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 293
+        }
+      },
+      "source": [
+        "df['w'].value_counts()"
+      ],
+      "execution_count": 0,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "c     137\n",
+              "q      78\n",
+              "w      63\n",
+              "i      59\n",
+              "aa     54\n",
+              "ff     53\n",
+              "k      51\n",
+              "cc     41\n",
+              "m      38\n",
+              "x      38\n",
+              "d      30\n",
+              "e      25\n",
+              "j      10\n",
+              "r       3\n",
+              "Name: w, dtype: int64"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 136
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "Fa3vh49S4SLI",
+        "colab_type": "code",
+        "outputId": "a9ee775f-503d-4d84-950c-f8d77577ed97",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 175
+        }
+      },
+      "source": [
+        "# contingency table (crosstab)\n",
+        "\n",
+        "observed = pd.crosstab(df['g'], df['w'])\n",
+        "\n",
+        "observed"
+      ],
+      "execution_count": 0,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/html": [
+              "<div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th>w</th>\n",
+              "      <th>aa</th>\n",
+              "      <th>c</th>\n",
+              "      <th>cc</th>\n",
+              "      <th>d</th>\n",
+              "      <th>e</th>\n",
+              "      <th>ff</th>\n",
+              "      <th>i</th>\n",
+              "      <th>j</th>\n",
+              "      <th>k</th>\n",
+              "      <th>m</th>\n",
+              "      <th>q</th>\n",
+              "      <th>r</th>\n",
+              "      <th>w</th>\n",
+              "      <th>x</th>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>g</th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>g</th>\n",
+              "      <td>40</td>\n",
+              "      <td>102</td>\n",
+              "      <td>31</td>\n",
+              "      <td>23</td>\n",
+              "      <td>19</td>\n",
+              "      <td>34</td>\n",
+              "      <td>47</td>\n",
+              "      <td>5</td>\n",
+              "      <td>34</td>\n",
+              "      <td>30</td>\n",
+              "      <td>72</td>\n",
+              "      <td>2</td>\n",
+              "      <td>49</td>\n",
+              "      <td>29</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>gg</th>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>p</th>\n",
+              "      <td>14</td>\n",
+              "      <td>35</td>\n",
+              "      <td>9</td>\n",
+              "      <td>7</td>\n",
+              "      <td>6</td>\n",
+              "      <td>18</td>\n",
+              "      <td>12</td>\n",
+              "      <td>5</td>\n",
+              "      <td>17</td>\n",
+              "      <td>8</td>\n",
+              "      <td>6</td>\n",
+              "      <td>1</td>\n",
+              "      <td>14</td>\n",
+              "      <td>9</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>"
+            ],
+            "text/plain": [
+              "w   aa    c  cc   d   e  ff   i  j   k   m   q  r   w   x\n",
+              "g                                                        \n",
+              "g   40  102  31  23  19  34  47  5  34  30  72  2  49  29\n",
+              "gg   0    0   1   0   0   1   0  0   0   0   0  0   0   0\n",
+              "p   14   35   9   7   6  18  12  5  17   8   6  1  14   9"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 181
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "Lmi_8fWkkFaH",
+        "colab_type": "code",
+        "outputId": "764acdbd-7294-4d37-f297-b1f276edd86e",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 293
+        }
+      },
+      "source": [
+        "stats.chi2_contingency(observed)\n",
+        "\n"
+      ],
+      "execution_count": 0,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "(34.82407777787196,\n",
+              " 0.11550586840811132,\n",
+              " 26,\n",
+              " array([[4.10558824e+01, 1.04160294e+02, 3.11720588e+01, 2.28088235e+01,\n",
+              "         1.90073529e+01, 4.02955882e+01, 4.48573529e+01, 7.60294118e+00,\n",
+              "         3.87750000e+01, 2.88911765e+01, 5.93029412e+01, 2.28088235e+00,\n",
+              "         4.78985294e+01, 2.88911765e+01],\n",
+              "        [1.58823529e-01, 4.02941176e-01, 1.20588235e-01, 8.82352941e-02,\n",
+              "         7.35294118e-02, 1.55882353e-01, 1.73529412e-01, 2.94117647e-02,\n",
+              "         1.50000000e-01, 1.11764706e-01, 2.29411765e-01, 8.82352941e-03,\n",
+              "         1.85294118e-01, 1.11764706e-01],\n",
+              "        [1.27852941e+01, 3.24367647e+01, 9.70735294e+00, 7.10294118e+00,\n",
+              "         5.91911765e+00, 1.25485294e+01, 1.39691176e+01, 2.36764706e+00,\n",
+              "         1.20750000e+01, 8.99705882e+00, 1.84676471e+01, 7.10294118e-01,\n",
+              "         1.49161765e+01, 8.99705882e+00]]))"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 182
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "-geXHBHk5vu-",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "# Based on a chi^2 statistic of 34.82 and a p_value of .1156, I fail to reject the null hypothesis that 'g' and 'w' are independent."
+      ],
+      "execution_count": 0,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "5DcLCC925vz1",
+        "colab_type": "code",
+        "outputId": "c9fed48e-61a7-4702-e5e1-ea3aa0fb7f5f",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 143
+        }
+      },
+      "source": [
+        "observed2 = pd.crosstab(df['t'], df['t.1'])\n",
+        "\n",
+        "observed2"
+      ],
+      "execution_count": 0,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/html": [
+              "<div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th>t.1</th>\n",
+              "      <th>f</th>\n",
+              "      <th>t</th>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>t</th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>f</th>\n",
+              "      <td>262</td>\n",
+              "      <td>67</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>t</th>\n",
+              "      <td>133</td>\n",
+              "      <td>227</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>"
+            ],
+            "text/plain": [
+              "t.1    f    t\n",
+              "t            \n",
+              "f    262   67\n",
+              "t    133  227"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 183
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "qMFXQsI55v2S",
+        "colab_type": "code",
+        "outputId": "0d064038-3e7a-4714-92c8-7187c2a17cac",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 109
+        }
+      },
+      "source": [
+        "stats.chi2_contingency(observed2)"
+      ],
+      "execution_count": 0,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "(126.32923609627952,\n",
+              " 2.6047783533407037e-29,\n",
+              " 1,\n",
+              " array([[188.61393324, 140.38606676],\n",
+              "        [206.38606676, 153.61393324]]))"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 184
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "rdfehEGW5v4i",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "# Based on a chi^2 statistic of 126.33 and a p_value of basically 0, I reject the null hypothesis that 't' and 't.1' are independent."
+      ],
+      "execution_count": 0,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "ZM8JckA2bgnp",
+        "colab_type": "text"
+      },
+      "source": [
+        "## Part 3 - Analysis and Interpretation\n",
+        "\n",
+        "Now that you've looked at the data, answer the following questions:\n",
+        "\n",
+        "- Interpret and explain the two t-tests you ran - what do they tell you about the relationships between the continuous features you selected and the class labels?\n",
+        "- Interpret and explain the two Chi-squared tests you ran - what do they tell you about the relationships between the categorical features you selected and the class labels?\n",
+        "- What was the most challenging part of this sprint challenge?\n",
+        "\n",
+        "Answer with text, but feel free to intersperse example code/results or refer to it from earlier."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "rXgXPRNU76UA",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "# Within the '+' Column, I compared the '0', '1.25' and '0.1' variables, and found that for each one, the means (within the + and - variable of the + column) were completely different.\n",
+        "#This tells me that the relationship between the + and - section, or that I didn't know how to functionally alter the + and - into numerical values"
+      ],
+      "execution_count": 0,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "3v6a_8xR76b8",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "#The first Chi2 tests showed that the 'g' and 'w' columns were independently related, though on the low end, as the P value for this test was .1155\n",
+        "#The 2nd Chi2 test showed that the 't' and 't.1' variables were very dependent on each other, as the P score was essentially 0. "
+      ],
+      "execution_count": 0,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "8SFB_Pr676iT",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "#The most challenging part of this for me, was the cleaning of the data, but also in changing the value of the '+' column to a numerical one. In order for the T test to work, the + \n",
+        "#column needed to be numeric, except that the only two variables were + and -. And I believe that in order to get the most accurate T test, the + and - needed to be\n",
+        "#estimated very well. And since I had absolutely no understanding of how to convert this column into proper numerical values, this could have affected the T test greatly.\n",
+        "#Also I wasn't exactly sure how to plot the Chi2 graph"
+      ],
+      "execution_count": 0,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "LIozLDNG2Uhu",
+        "colab_type": "text"
+      },
+      "source": [
+        "*Your words here!*"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "XOequK5xpVz7",
+        "colab_type": "text"
+      },
+      "source": [
+        "# Stretch Goals: \n",
+        "Do these to get a 3. These are not required in order to pass the Sprint Challenge.\n",
+        "\n",
+        "## Part 1: \n",
+        "\n",
+        "Make sure that all of your dataframe columns have the appropriate data types. *Hint:* If a column has the datatype of \"object\" even though it's made up of float or integer values, you can coerce it to act as a numeric column by using the `pd.to_numeric()` function. In order to get a 3 on this section make sure that your data exploration is particularly well commented, easy to follow, and thorough.\n",
+        "\n",
+        "## Part 2:\n",
+        "\n",
+        "Write functions that can calculate t-tests and chi^2 tests on all of the appropriate column combinations from the dataset. (Remember that certain tests require certain variable types.)\n",
+        "\n",
+        "## Part 3: \n",
+        "\n",
+        "Calculate and report confidence intervals on your most important mean estimates (choose at least two). Make some kind of a graphic or visualization to help us see visually how precise these estimates are."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "NT37grnxqa05",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "# You can work the stretch goals down here or back up in their regular sections\n",
+        "# just make sure that they are labeled so that we can easily differentiate\n",
+        "# your main work from the stretch goals."
+      ],
+      "execution_count": 0,
+      "outputs": []
+    }
+  ]
+}
